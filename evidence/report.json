@@ -1,0 +1,223 @@
+{
+  "coverage": {
+    "network": "Test SDF Network ; September 2015",
+    "accounts": [
+      "GDEMO_SENDER"
+    ],
+    "start": "2026-09-01T10:00:00Z",
+    "end": "2026-09-01T14:00:00Z",
+    "complete": true,
+    "internal_complete": true,
+    "reason": "Offline caller assertion, not live verification: Synthetic complete ordinary-payment dataset; no live ledger verification",
+    "source": "offline-file",
+    "pages": 0
+  },
+  "total_unknown": 3,
+  "generated_at": "2026-09-01T13:00:00Z",
+  "target_app": "synthetic-payroll",
+  "time_window_start": "2026-09-01T11:00:00Z",
+  "time_window_end": "2026-09-01T13:00:00Z",
+  "total_internal": 7,
+  "total_on_chain": 5,
+  "total_matched": 1,
+  "total_discrepancies": 4,
+  "discrepancy_counts": {
+    "AMOUNT_MISMATCH": 1,
+    "DUPLICATE_INTERNAL": 2,
+    "MISSING_ON_CHAIN": 1
+  },
+  "results": [
+    {
+      "candidate_operation_ids": [
+        "1"
+      ],
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "operation_id": "1",
+        "asset_type": "native",
+        "id": "matched",
+        "source_app": "synthetic-payroll",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_MATCHED",
+        "amount": "100",
+        "asset": "XLM",
+        "status": "completed",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "on_chain_payment": {
+        "network": "Test SDF Network ; September 2015",
+        "operation_type": "payment",
+        "asset_type": "native",
+        "transaction_hash": "synthetic-tx-1",
+        "operation_id": "1",
+        "account": "GDEMO_SENDER",
+        "destination": "GDEMO_MATCHED",
+        "amount": "100.0000000",
+        "asset_code": "XLM",
+        "asset_issuer": "",
+        "timestamp": "2026-09-01T12:00:00Z",
+        "ledger_sequence": 0,
+        "successful": true
+      },
+      "status": "EXACT",
+      "discrepancy": "NONE",
+      "notes": "Unique ordinary payment; exact amount, asset and direction",
+      "amount_delta": "0.0000000"
+    },
+    {
+      "candidate_operation_ids": [
+        "2"
+      ],
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "operation_id": "2",
+        "asset_type": "native",
+        "id": "amount-mismatch",
+        "source_app": "synthetic-payroll",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_AMOUNT_MISMATCH",
+        "amount": "11",
+        "asset": "XLM",
+        "status": "completed",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "on_chain_payment": {
+        "network": "Test SDF Network ; September 2015",
+        "operation_type": "payment",
+        "asset_type": "native",
+        "transaction_hash": "synthetic-tx-2",
+        "operation_id": "2",
+        "account": "GDEMO_SENDER",
+        "destination": "GDEMO_AMOUNT_MISMATCH",
+        "amount": "10",
+        "asset_code": "XLM",
+        "asset_issuer": "",
+        "timestamp": "2026-09-01T12:00:00Z",
+        "ledger_sequence": 0,
+        "successful": true
+      },
+      "status": "DISCREPANCY",
+      "discrepancy": "AMOUNT_MISMATCH",
+      "notes": "Explicit identity matched; delivered amount differs",
+      "amount_delta": "1.0000000"
+    },
+    {
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "operation_id": "missing-op",
+        "asset_type": "native",
+        "id": "missing",
+        "source_app": "synthetic-payroll",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_MISSING",
+        "amount": "50",
+        "asset": "XLM",
+        "status": "completed",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "status": "DISCREPANCY",
+      "discrepancy": "MISSING_ON_CHAIN",
+      "notes": "No matching ordinary payment in the covered candidate window"
+    },
+    {
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "asset_type": "native",
+        "id": "pending",
+        "source_app": "synthetic-payroll",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_PENDING",
+        "amount": "20",
+        "asset": "XLM",
+        "status": "pending",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "status": "UNKNOWN",
+      "discrepancy": "UNRESOLVED",
+      "notes": "No settlement found; status or coverage does not justify absence"
+    },
+    {
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "asset_type": "native",
+        "id": "duplicate",
+        "source_app": "synthetic-payroll",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_DUPLICATE",
+        "amount": "30",
+        "asset": "XLM",
+        "status": "completed",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "status": "DISCREPANCY",
+      "discrepancy": "DUPLICATE_INTERNAL",
+      "notes": "Repeated internal ID within source"
+    },
+    {
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "asset_type": "native",
+        "id": "duplicate",
+        "source_app": "synthetic-payroll",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_DUPLICATE",
+        "amount": "30",
+        "asset": "XLM",
+        "status": "completed",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "status": "DISCREPANCY",
+      "discrepancy": "DUPLICATE_INTERNAL",
+      "notes": "Repeated internal ID within source"
+    },
+    {
+      "candidate_operation_ids": [
+        "3",
+        "4"
+      ],
+      "internal_payment": {
+        "operation_type": "payment",
+        "network": "Test SDF Network ; September 2015",
+        "asset_type": "native",
+        "id": "ambiguous",
+        "source_app": "synthetic-payroll",
+        "reference_id": "synthetic-batch",
+        "sender": "GDEMO_SENDER",
+        "recipient": "GDEMO_AMBIGUOUS",
+        "amount": "1",
+        "asset": "XLM",
+        "status": "completed",
+        "timestamp": "2026-09-01T12:00:00Z"
+      },
+      "status": "UNKNOWN",
+      "discrepancy": "UNRESOLVED",
+      "notes": "Multiple candidate operations; supply an operation ID"
+    },
+    {
+      "on_chain_payment": {
+        "network": "Test SDF Network ; September 2015",
+        "operation_type": "payment",
+        "asset_type": "native",
+        "transaction_hash": "synthetic-tx-5",
+        "operation_id": "5",
+        "account": "GDEMO_SENDER",
+        "destination": "GDEMO_UNCLAIMED",
+        "amount": "999",
+        "asset_code": "XLM",
+        "asset_issuer": "",
+        "timestamp": "2026-09-01T12:00:00Z",
+        "ledger_sequence": 0,
+        "successful": true
+      },
+      "status": "UNKNOWN",
+      "discrepancy": "UNRESOLVED",
+      "notes": "Unclaimed observation; export completeness/scope unproven"
+    }
+  ]
+}

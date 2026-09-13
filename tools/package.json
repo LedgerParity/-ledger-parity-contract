@@ -1,0 +1,8 @@
+{
+  "name": "ledgerparity-contract-ops",
+  "private": true,
+  "type": "module",
+  "engines": {"node": ">=22.12.0"},
+  "scripts": {"test": "node --test monitor.test.mjs", "monitor": "node monitor.mjs"},
+  "dependencies": {"@stellar/stellar-sdk": "17.0.1"}
+}

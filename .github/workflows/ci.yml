@@ -17,6 +17,11 @@ jobs:
         run: cargo fmt --check
       - name: Test authorization and storage
         run: cargo test --locked
+      - name: Test read-only lifecycle monitor
+        working-directory: tools
+        run: |
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm test
       - name: Build contract Wasm
         run: cargo build --locked --release --target wasm32-unknown-unknown
       - name: Package verified Wasm

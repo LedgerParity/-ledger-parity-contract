@@ -23,7 +23,7 @@ The artifact is `target/wasm32-unknown-unknown/release/ledger_parity_verify.wasm
 
 ## Deployment limits
 
-No deployment or production readiness is claimed. Version 0.2.0 requires a fresh deployment: version 0.1.0 instance records are not migrated or read by this storage layout. Per-record renewal is implemented, but scheduling, deployed restoration, current-protocol compatibility and fees still need testnet validation. Native tests and Wasm compilation do not establish those results.
+Version 0.2.0 was deployed and exercised with synthetic data on Protocol 28 testnet; see [TESTNET.md](TESTNET.md) for transaction IDs, read-back, early renewal and measured provider fees. No production readiness is claimed. It requires a fresh deployment: version 0.1.0 instance records are not migrated or read by this layout. A [read-only monitor](tools/README.md) and public testnet registry are included. Operator scheduling and actual archived-state restoration remain unvalidated.
 
 Registration is first-writer-per-hash. Any address can register a publicly known hash under itself; authorization prevents impersonating another address, but does not establish report authorship. Metadata is public on deployment; never include secrets or private operator exports. Deployment and signing are separate from the read-only CLI.
 

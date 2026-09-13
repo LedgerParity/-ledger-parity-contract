@@ -1,0 +1,94 @@
+{
+    "schema":  "ledgerparity-testnet-evidence/v1",
+    "synthetic":  true,
+    "cli_version":  "28.0.0",
+    "source_commit":  "ddb3efffc317464a153327f4a789229c2ae19292",
+    "network":  {
+                    "friendbotUrl":  "https://friendbot.stellar.org/",
+                    "passphrase":  "Test SDF Network ; September 2015",
+                    "protocolVersion":  28
+                },
+    "contract_id":  "CBSEWOCE3V7SZDYKAOIJDXI54KWPFIHU7RMRTB56PZBV5Y3N47BGNPV7",
+    "wasm_sha256":  "26c92f94678817fb97dc8e4f9e7d9858d4f39d28c1bae20420201804d1a483cd",
+    "report_sha256":  "712d1ce47ff80339a5ec37cee27d08945730ad1c5975e06b4233dee91445cbce",
+    "transactions":  [
+                         {
+                             "hash":  "6d7e9b8eebf8c4a889fec7adb678be4f8fcff7c914adb14103296ad61233e13e",
+                             "successful":  true,
+                             "ledger":  4662926,
+                             "created_at":  "2026-09-13T22:23:37Z",
+                             "fee_charged_stroops":  "2456523",
+                             "max_fee_stroops":  "2831561",
+                             "operation_count":  1
+                         },
+                         {
+                             "hash":  "641fb3fdc59e8da6256126151f14b28f88345d3adefc3430d506ba395bb814b3",
+                             "successful":  true,
+                             "ledger":  4662930,
+                             "created_at":  "2026-09-13T22:23:57Z",
+                             "fee_charged_stroops":  "19295",
+                             "max_fee_stroops":  "30902",
+                             "operation_count":  1
+                         },
+                         {
+                             "hash":  "5874ed5bb30349e16c9db930d8853b59b817fce9cb3622adb4b62ed6e10f3d1e",
+                             "successful":  true,
+                             "ledger":  4662947,
+                             "created_at":  "2026-09-13T22:25:22Z",
+                             "fee_charged_stroops":  "8143529",
+                             "max_fee_stroops":  "9373584",
+                             "operation_count":  1
+                         },
+                         {
+                             "hash":  "ad4dd635079ca9eb5cfdc217a5ba95a334e1257f781e9579919ed4d5004222ee",
+                             "successful":  true,
+                             "ledger":  4662965,
+                             "created_at":  "2026-09-13T22:26:52Z",
+                             "fee_charged_stroops":  "3627",
+                             "max_fee_stroops":  "13313",
+                             "operation_count":  1
+                         }
+                     ],
+    "readback":  {
+                     "metadata":  "73796e7468657469632d64656d6f",
+                     "owner":  "GB72LF6W45GRQV7ODHG5D55PJ3OCVYXCNTUX7ZBQZ2VRRWQZT6Y5PMTL",
+                     "timestamp":  1789338322
+                 },
+    "renewal_returned":  true,
+    "renewal_was_early":  true,
+    "archived_restoration_tested":  false,
+    "monitor":  {
+                    "schema":  "ledgerparity-contract-monitor/v1",
+                    "latest_ledger":  4663055,
+                    "entries":  [
+                                    {
+                                        "kind":  "instance",
+                                        "key":  "AAAABgAAAAFkSzhE3X8sjwoDkJHdHeKs8qD0/FkZh75+Q17jbefCZgAAABQAAAAB",
+                                        "live_until_ledger":  5181347,
+                                        "ttl_ledgers":  518292,
+                                        "status":  "live"
+                                    },
+                                    {
+                                        "kind":  "code",
+                                        "key":  "AAAABybJL5RniBf7l9yOT559mFjU850owbriBCAgGATRpIPN",
+                                        "live_until_ledger":  5181347,
+                                        "ttl_ledgers":  518292,
+                                        "status":  "live"
+                                    },
+                                    {
+                                        "kind":  "report",
+                                        "hash":  "712d1ce47ff80339a5ec37cee27d08945730ad1c5975e06b4233dee91445cbce",
+                                        "key":  "AAAABgAAAAFkSzhE3X8sjwoDkJHdHeKs8qD0/FkZh75+Q17jbefCZgAAAA0AAAAgcS0c5H/4Azml7DfO4n0IlFcwrRxZdeBrQjPe6RRFy84AAAAB",
+                                        "restore_key_xdr":  "AAAADQAAACBxLRzkf/gDOaXsN87ifQiUVzCtHFl14GtCM97pFEXLzg==",
+                                        "live_until_ledger":  5181347,
+                                        "ttl_ledgers":  518292,
+                                        "status":  "live"
+                                    }
+                                ],
+                    "maintenance_required":  false,
+                    "contract_id":  "CBSEWOCE3V7SZDYKAOIJDXI54KWPFIHU7RMRTB56PZBV5Y3N47BGNPV7",
+                    "network":  "Test SDF Network ; September 2015",
+                    "protocol_version":  28,
+                    "observed_at":  "2026-09-13T22:34:24.800Z"
+                }
+}
