@@ -1,0 +1,2 @@
+# Preserve the exact report bytes whose SHA-256 was registered on testnet.
+/evidence/report.json -text

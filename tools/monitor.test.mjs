@@ -2,6 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {keysFor, summarize, monitor} from './monitor.mjs';
 import {xdr} from '@stellar/stellar-sdk';
+import fs from 'node:fs';
+import {createHash} from 'node:crypto';
 const registry = {schema:'ledgerparity-contract-registry/v1', rpc_url:'https://soroban-testnet.stellar.org', network:'Test SDF Network ; September 2015',
   contract_id:'CBSEWOCE3V7SZDYKAOIJDXI54KWPFIHU7RMRTB56PZBV5Y3N47BGNPV7', wasm_sha256:'26c92f94678817fb97dc8e4f9e7d9858d4f39d28c1bae20420201804d1a483cd', reports:['a'.repeat(64)], renewal_threshold:259200};
 test('report restoration key is raw bytes, with separate instance and code keys', () => {
@@ -26,4 +28,13 @@ test('bad registries and malformed provider entries fail', () => {
 test('wrong-network and HTTP errors cannot become healthy results', async () => {
   await assert.rejects(monitor(registry,async()=>({ok:true,json:async()=>({result:{passphrase:'wrong'}})})),/network/);
   await assert.rejects(monitor(registry,async()=>({ok:false,status:503})),/503/);
+});
+test('distributed evidence preserves the exact registered report bytes', () => {
+  const report=fs.readFileSync(new URL('../evidence/report.json',import.meta.url));
+  const evidence=JSON.parse(fs.readFileSync(new URL('../evidence/testnet.json',import.meta.url),'utf8'));
+  const deployed=JSON.parse(fs.readFileSync(new URL('registry.testnet.json',import.meta.url),'utf8'));
+  const hash=createHash('sha256').update(report).digest('hex');
+  assert.equal(hash,evidence.report_sha256);
+  assert.ok(deployed.reports.includes(hash));
+  assert.equal(evidence.contract_id,deployed.contract_id);
 });
