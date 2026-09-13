@@ -1,0 +1,26 @@
+[package]
+name = "ledger-parity-verify"
+version = "0.1.0"
+edition = "2021"
+description = "Soroban smart contract for tamper-proof reconciliation report verification"
+license = "MIT"
+repository = "https://github.com/LedgerParity/ledger-parity-contract"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+soroban-sdk = "21.0.0"
+
+[dev-dependencies]
+soroban-sdk = { version = "21.0.0", features = ["testutils"] }
+
+[profile.release]
+opt-level = "z"
+overflow-checks = true
+debug = 0
+strip = "symbols"
+debug-assertions = false
+panic = "abort"
+codegen-units = 1
+lto = true
