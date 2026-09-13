@@ -19,3 +19,15 @@ jobs:
         run: cargo test --locked
       - name: Build contract Wasm
         run: cargo build --locked --release --target wasm32-unknown-unknown
+      - name: Package verified Wasm
+        run: |
+          mkdir -p dist
+          cp target/wasm32-unknown-unknown/release/ledger_parity_verify.wasm dist/
+          cd dist
+          sha256sum ledger_parity_verify.wasm > SHA256SUMS
+      - name: Upload verified Wasm
+        uses: actions/upload-artifact@v4
+        with:
+          name: ledger-parity-contract-wasm
+          path: dist/
+          if-no-files-found: error
