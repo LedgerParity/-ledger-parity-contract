@@ -32,3 +32,7 @@ At 29c8a24, [Linux CI run 34785885294](https://github.com/LedgerParity/-ledger-p
 ## Protocol 28 testnet and operations follow-up
 
 The CI-built Wasm was deployed on Protocol 28 testnet using a dedicated synthetic identity. Signed registration, exact read-back, early renewal and provider fee evidence are in TESTNET.md and evidence/testnet.json. Read-only lifecycle monitoring and an external hash registry are implemented in tools/; four offline tests and a live read passed. This supersedes the earlier statement that no testnet deployment had occurred. Actual archived restoration is still unexecuted because the fresh entries remain live through ledger 5181347; there is no contract operation to shorten their TTL. Early renewal is explicitly not evidence of threshold extension or restoration. No production or operator-adoption claim.
+
+## Published artifact verification
+
+Contract v0.2.0-preview is published: https://github.com/LedgerParity/-ledger-parity-contract/releases/tag/v0.2.0-preview. Release run 34787502177 and CI run 34787497018 passed 13 Rust tests, five monitor/evidence tests and the Wasm build. The published Wasm was downloaded independently and its checksum matched the Protocol 28 deployment artifact exactly. A post-renewal get_info call confirmed owner, timestamp and metadata were unchanged. No actual archived restoration or operator adoption is claimed.
