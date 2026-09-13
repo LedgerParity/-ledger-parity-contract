@@ -19,6 +19,6 @@ Authorization design reference: [Stellar authorization](https://developers.stell
 
 ## Verification
 
-Local formatting and diff checks passed. Local `cargo test` was blocked before compiling the contract because the installed Windows MSVC toolchain has no `link.exe`; the Visual Studio Build Tools installation is incomplete. Do not describe this as a passing local Rust test run. Linux CI is the execution gate; its final result will be recorded after the workflow runs.
+Local formatting and diff checks passed. Local `cargo test` was blocked before compiling the contract because the installed Windows MSVC toolchain has no `link.exe`; the Visual Studio Build Tools installation is incomplete. Do not describe this as a passing local Rust test run. Linux CI passed at bb7c010: formatting, all seven contract tests, and the locked release Wasm build. See [contract CI run 34784668593](https://github.com/LedgerParity/-ledger-parity-contract/actions/runs/34784668593). This is native SDK testing and Wasm compilation, not a deployed network test.
 
 Related CLI commit 2633f88 passed both Go matrix jobs: [CI run 34782675975](https://github.com/LedgerParity/ledger-parity-cli/actions/runs/34782675975).
