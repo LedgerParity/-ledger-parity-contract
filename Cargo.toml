@@ -2,9 +2,9 @@
 name = "ledger-parity-verify"
 version = "0.1.0"
 edition = "2021"
-description = "Soroban smart contract for tamper-proof reconciliation report verification"
+description = "Soroban contract for owner-authorized report hash registration"
 license = "MIT"
-repository = "https://github.com/LedgerParity/ledger-parity-contract"
+repository = "https://github.com/LedgerParity/-ledger-parity-contract"
 
 [lib]
 crate-type = ["cdylib"]

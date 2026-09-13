@@ -1,53 +1,28 @@
-# ledger-parity-contract
+﻿# LedgerParity report hash contract
 
-Soroban smart contract for tamper-proof reconciliation report verification.
-Part of the [LedgerParity](https://github.com/LedgerParity) ecosystem.
+A development Soroban contract that registers a 32-byte report hash with an authorizing address, ledger timestamp and at most 1024 metadata bytes.
 
-## What it does
+`store(hash, owner, metadata)` requires the owner's authorization for the invocation and rejects duplicate hashes. `verify(hash)` checks registration, `get_info(hash)` returns the stored record (or fails if absent), and `is_owner(hash, owner)` compares the registered address.
 
-Stores report hashes on-chain so operators can prove a reconciliation was
-performed at a specific time with specific results. The CLI calls this contract
-after generating a report.
+This records an authorized assertion of a hash. It does not prove that reconciliation ran, that the report is correct, that the registrant created it, or that the metadata is true. The timestamp is registration time. The CLI's `--verify` and `--verify-check` are local checksum operations; the CLI does not invoke this contract or submit transactions.
 
-## Functions
+## Checks
 
-| Function | Description |
-|---|---|
-| `store(hash, owner, metadata)` | Store a report hash with owner address |
-| `verify(hash)` | Check if a report hash exists on-chain |
-| `get_info(hash)` | Retrieve owner, timestamp, and metadata |
-| `is_owner(hash, owner)` | Check if a hash was stored by a specific owner |
-
-## Deploy
-
-Requires [Stellar CLI](https://developers.stellar.org/docs/smart-contracts/getting-started/setup):
+Use Rust with its platform linker and the Wasm target installed:
 
 ```sh
-# Build
-soroban contract build
-
-# Deploy to testnet
-soroban contract deploy \
-  --wasm target/wasm32-unknown-unknown/release/ledger_parity_verify.wasm \
-  --network testnet
+rustup target add wasm32-unknown-unknown
+cargo fmt --check
+cargo test --locked
+cargo build --locked --release --target wasm32-unknown-unknown
 ```
 
-## Usage from CLI
+The artifact is `target/wasm32-unknown-unknown/release/ledger_parity_verify.wasm`. CI runs these checks on Linux. Cargo.lock fixes the resolved SDK/dependency graph; this review does not migrate the existing SDK 21 dependency to the latest protocol.
 
-```sh
-# Generate report and store proof
-ledger-parity --config config.json --format json --out report.json --verify auto
+## Deployment limits
 
-# Verify a report against saved proof
-ledger-parity --verify-check report.json.proof.json report.json
-```
+No deployment or production readiness is claimed. This preview retains instance storage: all entries share instance capacity and lifetime. There is no TTL extension or restoration workflow, and an unlimited registry will exceed capacity. Design persistent per-record storage and lifecycle management before sustained use; that would change storage layout and require a fresh deployment or migration.
 
-## Tests
+Registration is first-writer-per-hash. Any address can register a publicly known hash under itself; authorization prevents impersonating another address, but does not establish report authorship. Metadata is public on deployment; never include secrets or private operator exports. Deployment and signing are separate from the read-only CLI.
 
-```sh
-soroban contract test
-```
-
-## License
-
-MIT
+See [REVIEW.md](REVIEW.md) for findings and verification evidence. MIT licensed.

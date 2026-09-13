@@ -1,0 +1,21 @@
+name: Contract checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust targets
+        run: rustup target add wasm32-unknown-unknown
+      - name: Format
+        run: cargo fmt --check
+      - name: Test authorization and storage
+        run: cargo test --locked
+      - name: Build contract Wasm
+        run: cargo build --locked --release --target wasm32-unknown-unknown
