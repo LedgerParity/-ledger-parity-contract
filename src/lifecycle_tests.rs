@@ -121,19 +121,44 @@ fn absent_or_invalid_renewal_does_not_create_records() {
 
 #[test]
 fn archived_record_cannot_be_read_as_absent_or_overwritten() {
-    let (env, id, owner, hash) = setup(TTL_TARGET * 3);
-    let client = VerifyContractClient::new(&env, &id);
-    // Keep the contract live so this exercises record archival specifically.
-    env.as_contract(&id, || {
-        env.storage()
-            .instance()
-            .extend_ttl(TTL_TARGET * 2, TTL_TARGET * 2)
-    });
-    env.ledger()
-        .with_mut(|ledger| ledger.sequence_number += TTL_TARGET + 1);
-    assert!(client.try_verify(&hash).is_err());
-    assert!(client.try_get_info(&hash).is_err());
-    assert!(client.try_is_owner(&hash, &owner).is_err());
-    assert!(client.try_renew(&hash).is_err());
-    assert!(client.try_store(&hash, &owner, &Bytes::new(&env)).is_err());
+    // SDK 21 escalates archived access to a host panic even for try_* calls.
+    // Use a fresh environment for each operation and check the precise reason.
+    for operation in 0..5 {
+        let (env, id, owner, hash) = setup(TTL_TARGET * 3);
+        let client = VerifyContractClient::new(&env, &id);
+        env.as_contract(&id, || {
+            env.storage()
+                .instance()
+                .extend_ttl(TTL_TARGET * 2, TTL_TARGET * 2)
+        });
+        env.ledger()
+            .with_mut(|ledger| ledger.sequence_number += TTL_TARGET + 1);
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match operation {
+            0 => {
+                client.verify(&hash);
+            }
+            1 => {
+                client.get_info(&hash);
+            }
+            2 => {
+                client.is_owner(&hash, &owner);
+            }
+            3 => {
+                client.renew(&hash);
+            }
+            _ => {
+                client.store(&hash, &owner, &Bytes::new(&env));
+            }
+        }));
+        let panic = result.expect_err("archived access must fail");
+        let message = panic
+            .downcast_ref::<std::string::String>()
+            .map(|s| s.as_str())
+            .or_else(|| panic.downcast_ref::<&str>().copied())
+            .unwrap_or("");
+        assert!(
+            message.contains("has been archived"),
+            "unexpected panic: {message}"
+        );
+    }
 }
