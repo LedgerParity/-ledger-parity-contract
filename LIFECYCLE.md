@@ -26,4 +26,6 @@ Modern networks may restore entries through simulation-prepared transaction rest
 
 Six lifecycle tests cover separate storage/initial TTLs, immutable permissionless renewal and key isolation, read/early-renewal behavior, a lower network TTL cap, invalid/missing renewals, and archived-record reads/overwrite rejection. The original seven authorization and registration tests remain.
 
+All 13 tests and the release Wasm build passed at 29c8a24 in [Linux CI run 34785885294](https://github.com/LedgerParity/-ledger-parity-contract/actions/runs/34785885294). Archived-access tests assert the SDK 21 host panic's archival diagnostic for each operation; the host fails before a missing-record result or overwrite can succeed.
+
 Still required before deployment claims: current-protocol Wasm execution, signed testnet registration/read-back, real fee measurements, instance/code and record restoration/read-back, and an operator-run monitoring process. Contract renewal logic and a recovery runbook are implemented; network restoration has not been executed. Local Rust tests remain unavailable because the Windows MSVC linker is missing; Linux CI is the execution gate.
