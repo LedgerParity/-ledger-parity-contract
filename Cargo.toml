@@ -1,6 +1,6 @@
 [package]
 name = "ledger-parity-verify"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Soroban contract for owner-authorized report hash registration"
 license = "MIT"

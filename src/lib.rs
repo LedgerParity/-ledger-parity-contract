@@ -6,6 +6,18 @@ use soroban_sdk::{
 };
 
 const STORED: Symbol = symbol_short!("STORED");
+// Ledger count, not a wall-clock guarantee (about 30 days at 5 seconds/ledger).
+const TTL_TARGET: u32 = 518_400;
+
+fn extend_lifetime(env: &Env, hash: &Bytes) {
+    let target = TTL_TARGET.min(env.storage().max_ttl());
+    let threshold = target / 2;
+    env.storage()
+        .persistent()
+        .extend_ttl(hash, threshold, target);
+    // The SDK extends both the instance and its Wasm code, independently.
+    env.storage().instance().extend_ttl(threshold, target);
+}
 
 #[contracttype]
 pub struct ReportInfo {
@@ -24,7 +36,7 @@ impl VerifyContract {
         owner.require_auth();
         assert!(hash.len() == 32, "hash must be 32 bytes");
         assert!(metadata.len() <= 1024, "metadata exceeds 1024 bytes");
-        if env.storage().instance().has(&hash) {
+        if env.storage().persistent().has(&hash) {
             panic!("report already stored");
         }
         let info = ReportInfo {
@@ -32,31 +44,46 @@ impl VerifyContract {
             timestamp: env.ledger().timestamp(),
             metadata,
         };
-        env.storage().instance().set(&hash, &info);
+        env.storage().persistent().set(&hash, &info);
+        extend_lifetime(&env, &hash);
         env.events().publish((STORED, owner), hash);
     }
 
     /// Verify a report hash exists. Returns true if stored.
     pub fn verify(env: Env, hash: Bytes) -> bool {
-        env.storage().instance().has(&hash)
+        env.storage().persistent().has(&hash)
+    }
+
+    /// Anyone can pay to retain an existing record; no contents are changed.
+    /// False means absent, not archived. Archived entries must be restored first.
+    pub fn renew(env: Env, hash: Bytes) -> bool {
+        assert!(hash.len() == 32, "hash must be 32 bytes");
+        if !env.storage().persistent().has(&hash) {
+            return false;
+        }
+        extend_lifetime(&env, &hash);
+        true
     }
 
     /// Get info about a stored report. Panics if not found.
     pub fn get_info(env: Env, hash: Bytes) -> ReportInfo {
         env.storage()
-            .instance()
+            .persistent()
             .get(&hash)
             .expect("report not found")
     }
 
     /// Check if a hash was stored by a specific owner.
     pub fn is_owner(env: Env, hash: Bytes, owner: Address) -> bool {
-        match env.storage().instance().get::<_, ReportInfo>(&hash) {
+        match env.storage().persistent().get::<_, ReportInfo>(&hash) {
             Some(info) => info.owner == owner,
             None => false,
         }
     }
 }
+
+#[cfg(test)]
+mod lifecycle_tests;
 
 #[cfg(test)]
 mod tests {
