@@ -143,7 +143,9 @@ mod lifecycle_tests;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use soroban_sdk::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger};
+    use soroban_sdk::testutils::{
+        storage::Persistent as _, Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger,
+    };
     use soroban_sdk::{IntoVal, Symbol};
 
     #[test]
