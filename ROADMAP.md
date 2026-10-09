@@ -5,6 +5,7 @@
 - [x] Recovery procedure and explicit fresh-deployment boundary for the 0.2.0 storage layout.
 - [x] Validate Wasm execution on Protocol 28 testnet; record signed registration, read-back, early renewal and provider fees using synthetic data.
 - [x] Supply a read-only lifetime monitor and external registry of retained hashes.
+- [x] Add bounded batch registration (up to ten reports) with whole-batch validation and regression tests; testnet deployment remains open.
 - [ ] Validate actual archived restoration/read-back after entries expire; an early renewal is not that test.
 - [ ] Establish a real operator's monitoring/renewal schedule and ownership.
 

@@ -2,7 +2,7 @@
 
 A development Soroban contract that registers a 32-byte report hash with an authorizing address, ledger timestamp and at most 1024 metadata bytes.
 
-`store(hash, owner, metadata)` requires the owner's authorization for the invocation and rejects duplicate hashes. `verify(hash)` checks registration, `get_info(hash)` returns the stored record (or fails if absent), and `is_owner(hash, owner)` compares the registered address.
+`store(hash, owner, metadata)` requires the owner's authorization for the invocation and rejects duplicate hashes. `store_batch(owner, reports)` adds 1–10 reports in one owner-authorized invocation. It validates the entire batch before writing, rejects hashes already stored or repeated in the batch, and records one ledger timestamp for every report in the batch. `verify(hash)` checks registration, `get_info(hash)` returns the stored record (or fails if absent), and `is_owner(hash, owner)` compares the registered address.
 
 Version 0.2.0 stores each report in its own persistent entry. `renew(hash)` lets anyone pay to extend a registered report's lifetime without changing its owner, timestamp or metadata. Successful registration and renewal also maintain the instance and Wasm code lifetime. Reads do not renew entries. See [storage lifecycle](LIFECYCLE.md) for the policy, recovery procedure and test evidence.
 
@@ -23,7 +23,7 @@ The artifact is `target/wasm32-unknown-unknown/release/ledger_parity_verify.wasm
 
 ## Deployment limits
 
-Version 0.2.0 was deployed and exercised with synthetic data on Protocol 28 testnet; see [TESTNET.md](TESTNET.md) for transaction IDs, read-back, early renewal and measured provider fees. No production readiness is claimed. It requires a fresh deployment: version 0.1.0 instance records are not migrated or read by this layout. A [read-only monitor](tools/README.md) and public testnet registry are included. Operator scheduling and actual archived-state restoration remain unvalidated.
+Version 0.2.0 was deployed and exercised with synthetic data on Protocol 28 testnet; see [TESTNET.md](TESTNET.md) for transaction IDs, read-back, early renewal and measured provider fees. The batch-registration method is a post-0.2.0 source change and has not been deployed to testnet; exercising it requires a deployment built from this change. No production readiness is claimed. Version 0.2.0 itself requires a fresh deployment from version 0.1.0 because its persistent storage layout does not migrate old instance records. A [read-only monitor](tools/README.md) and public testnet registry are included. Operator scheduling and actual archived-state restoration remain unvalidated.
 
 Registration is first-writer-per-hash. Any address can register a publicly known hash under itself; authorization prevents impersonating another address, but does not establish report authorship. Metadata is public on deployment; never include secrets or private operator exports. Deployment and signing are separate from the read-only CLI.
 
