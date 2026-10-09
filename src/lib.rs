@@ -2,12 +2,26 @@
 #[cfg(test)]
 extern crate std;
 use soroban_sdk::{
-    contract, contractimpl, contracttype, symbol_short, Address, Bytes, Env, Symbol,
+    contract, contractimpl, contracttype, symbol_short, Address, Bytes, Env, Symbol, Vec,
 };
 
 const STORED: Symbol = symbol_short!("STORED");
 // Ledger count, not a wall-clock guarantee (about 30 days at 5 seconds/ledger).
 const TTL_TARGET: u32 = 518_400;
+const MAX_BATCH_SIZE: u32 = 10;
+
+#[contracttype]
+#[derive(Clone)]
+pub struct ReportInput {
+    pub hash: Bytes,
+    pub metadata: Bytes,
+}
+
+fn extend_contract_lifetime(env: &Env) {
+    let target = TTL_TARGET.min(env.storage().max_ttl());
+    let threshold = target / 2;
+    env.storage().instance().extend_ttl(threshold, target);
+}
 
 fn extend_lifetime(env: &Env, hash: &Bytes) {
     let target = TTL_TARGET.min(env.storage().max_ttl());
@@ -15,8 +29,7 @@ fn extend_lifetime(env: &Env, hash: &Bytes) {
     env.storage()
         .persistent()
         .extend_ttl(hash, threshold, target);
-    // The SDK extends both the instance and its Wasm code, independently.
-    env.storage().instance().extend_ttl(threshold, target);
+    extend_contract_lifetime(env);
 }
 
 #[contracttype]
@@ -47,6 +60,48 @@ impl VerifyContract {
         env.storage().persistent().set(&hash, &info);
         extend_lifetime(&env, &hash);
         env.events().publish((STORED, owner), hash);
+    }
+
+    /// Store up to ten reports atomically under one owner's authorization.
+    /// Every hash and metadata value is validated before any record is written.
+    pub fn store_batch(env: Env, owner: Address, reports: Vec<ReportInput>) {
+        owner.require_auth();
+        let count = reports.len();
+        assert!(
+            count > 0 && count <= MAX_BATCH_SIZE,
+            "batch must contain 1 to 10 reports"
+        );
+
+        let mut seen = Vec::new(&env);
+        for report in reports.iter() {
+            assert!(report.hash.len() == 32, "hash must be 32 bytes");
+            assert!(report.metadata.len() <= 1024, "metadata exceeds 1024 bytes");
+            assert!(
+                !env.storage().persistent().has(&report.hash),
+                "report already stored"
+            );
+            for prior in seen.iter() {
+                assert!(prior != report.hash, "duplicate hash in batch");
+            }
+            seen.push_back(report.hash);
+        }
+
+        let timestamp = env.ledger().timestamp();
+        for report in reports.iter() {
+            let info = ReportInfo {
+                owner: owner.clone(),
+                timestamp,
+                metadata: report.metadata,
+            };
+            env.storage().persistent().set(&report.hash, &info);
+            let target = TTL_TARGET.min(env.storage().max_ttl());
+            env.storage()
+                .persistent()
+                .extend_ttl(&report.hash, target / 2, target);
+            env.events().publish((STORED, owner.clone()), report.hash);
+        }
+        // Shared contract instance/code lifetime needs extending only once per call.
+        extend_contract_lifetime(&env);
     }
 
     /// Verify a report hash exists. Returns true if stored.
@@ -88,7 +143,9 @@ mod lifecycle_tests;
 #[cfg(test)]
 mod tests {
     use super::*;
-    use soroban_sdk::testutils::{Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger};
+    use soroban_sdk::testutils::{
+        storage::Persistent as _, Address as _, AuthorizedFunction, AuthorizedInvocation, Ledger,
+    };
     use soroban_sdk::{IntoVal, Symbol};
 
     #[test]
@@ -191,6 +248,136 @@ mod tests {
         let info = contract.get_info(&hash);
         assert_eq!(info.owner, owner);
         assert_eq!(info.metadata, metadata);
+    }
+
+    #[test]
+    fn batch_stores_each_report_under_one_owner_authorization() {
+        let env = Env::default();
+        let id = env.register_contract(None, VerifyContract);
+        let client = VerifyContractClient::new(&env, &id);
+        let owner = Address::generate(&env);
+        let first = Bytes::from_array(&env, &[21; 32]);
+        let second = Bytes::from_array(&env, &[22; 32]);
+        let reports = Vec::from_array(
+            &env,
+            [
+                ReportInput {
+                    hash: first.clone(),
+                    metadata: Bytes::from_slice(&env, b"first"),
+                },
+                ReportInput {
+                    hash: second.clone(),
+                    metadata: Bytes::from_slice(&env, b"second"),
+                },
+            ],
+        );
+
+        assert!(client.try_store_batch(&owner, &reports).is_err());
+        assert!(!client.verify(&first));
+        env.mock_all_auths();
+        env.ledger().with_mut(|ledger| ledger.timestamp = 4567);
+        client.store_batch(&owner, &reports);
+
+        assert_eq!(env.auths().len(), 1);
+        let first_info = client.get_info(&first);
+        let second_info = client.get_info(&second);
+        assert_eq!(first_info.owner, owner);
+        assert_eq!(first_info.timestamp, 4567);
+        assert_eq!(first_info.metadata, Bytes::from_slice(&env, b"first"));
+        assert_eq!(second_info.owner, owner);
+        assert_eq!(second_info.timestamp, 4567);
+        assert_eq!(second_info.metadata, Bytes::from_slice(&env, b"second"));
+    }
+
+    #[test]
+    fn invalid_batch_does_not_store_any_report() {
+        let env = Env::default();
+        let id = env.register_contract(None, VerifyContract);
+        let client = VerifyContractClient::new(&env, &id);
+        let owner = Address::generate(&env);
+        let first = Bytes::from_array(&env, &[31; 32]);
+        let already_stored = Bytes::from_array(&env, &[32; 32]);
+        env.mock_all_auths();
+        client.store(&already_stored, &owner, &Bytes::new(&env));
+
+        let includes_existing = Vec::from_array(
+            &env,
+            [
+                ReportInput {
+                    hash: first.clone(),
+                    metadata: Bytes::new(&env),
+                },
+                ReportInput {
+                    hash: already_stored,
+                    metadata: Bytes::new(&env),
+                },
+            ],
+        );
+        assert!(client.try_store_batch(&owner, &includes_existing).is_err());
+        assert!(!client.verify(&first));
+
+        let duplicate_in_batch = Vec::from_array(
+            &env,
+            [
+                ReportInput {
+                    hash: first.clone(),
+                    metadata: Bytes::new(&env),
+                },
+                ReportInput {
+                    hash: first.clone(),
+                    metadata: Bytes::new(&env),
+                },
+            ],
+        );
+        assert!(client.try_store_batch(&owner, &duplicate_in_batch).is_err());
+        assert!(!client.verify(&first));
+
+        let invalid_metadata = Vec::from_array(
+            &env,
+            [ReportInput {
+                hash: first.clone(),
+                metadata: Bytes::from_slice(&env, &[0; 1025]),
+            }],
+        );
+        assert!(client.try_store_batch(&owner, &invalid_metadata).is_err());
+        assert!(!client.verify(&first));
+    }
+
+    #[test]
+    fn batch_size_must_be_between_one_and_ten() {
+        let env = Env::default();
+        let id = env.register_contract(None, VerifyContract);
+        let client = VerifyContractClient::new(&env, &id);
+        let owner = Address::generate(&env);
+        let empty = Vec::<ReportInput>::new(&env);
+        assert!(client.try_store_batch(&owner, &empty).is_err());
+
+        let mut too_many = Vec::new(&env);
+        for value in 40u8..51u8 {
+            too_many.push_back(ReportInput {
+                hash: Bytes::from_array(&env, &[value; 32]),
+                metadata: Bytes::new(&env),
+            });
+        }
+        assert!(client.try_store_batch(&owner, &too_many).is_err());
+        assert_eq!(
+            env.as_contract(&id, || env.storage().persistent().all().len()),
+            0
+        );
+
+        let mut maximum = Vec::new(&env);
+        for value in 60u8..70u8 {
+            maximum.push_back(ReportInput {
+                hash: Bytes::from_array(&env, &[value; 32]),
+                metadata: Bytes::new(&env),
+            });
+        }
+        env.mock_all_auths();
+        client.store_batch(&owner, &maximum);
+        assert_eq!(
+            env.as_contract(&id, || env.storage().persistent().all().len()),
+            10
+        );
     }
 
     #[test]
