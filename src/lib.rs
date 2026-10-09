@@ -327,9 +327,7 @@ mod tests {
                 },
             ],
         );
-        assert!(client
-            .try_store_batch(&owner, &duplicate_in_batch)
-            .is_err());
+        assert!(client.try_store_batch(&owner, &duplicate_in_batch).is_err());
         assert!(!client.verify(&first));
 
         let invalid_metadata = Vec::from_array(
